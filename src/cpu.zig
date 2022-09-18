@@ -59,19 +59,19 @@ const Operand = enum {
     }
 };
 
-const u8OpResultWithOverflow = struct {
+const u8OpResultWithCarryHalf = struct {
     result: u8, 
     carry: bool, 
     half: bool
 };
 
-const u16OpResultWithOverflow = struct {
+const u16OpResultWithCarryHalf = struct {
     result: u16,
     carry: bool,
     half: bool
 };
 
-fn addU8WithCarryHalf(a: u8, b: u8) u8OpResultWithOverflow {
+fn addU8WithCarryHalf(a: u8, b: u8) u8OpResultWithCarryHalf {
     var result: u8 = 0;
     const overflow = @addWithOverflow(u8, a, b, &result);
     return .{
@@ -81,7 +81,7 @@ fn addU8WithCarryHalf(a: u8, b: u8) u8OpResultWithOverflow {
     };
 }
 
-fn addU16WithCarryHalf(a: u16, b: u16) u16OpResultWithOverflow {
+fn addU16WithCarryHalf(a: u16, b: u16) u16OpResultWithCarryHalf {
     var result: u16 = 0;
     const overflow = @addWithOverflow(u16, a, b, &result);
     return .{
@@ -91,7 +91,7 @@ fn addU16WithCarryHalf(a: u16, b: u16) u16OpResultWithOverflow {
     };
 }
 
-fn subU8WithCarryHalf(a: u8, b: u8) u8OpResultWithOverflow {
+fn subU8WithCarryHalf(a: u8, b: u8) u8OpResultWithCarryHalf {
     var result: u8 = 0;
     const overflow = @subWithOverflow(u8, a, b, &result);
     return .{
@@ -101,7 +101,7 @@ fn subU8WithCarryHalf(a: u8, b: u8) u8OpResultWithOverflow {
     };
 }
 
-fn subU16WithCarryHalf(a: u16, b: u16) u16OpResultWithOverflow {
+fn subU16WithCarryHalf(a: u16, b: u16) u16OpResultWithCarryHalf {
     var result: u16 = 0;
     const overflow = @subWithOverflow(u16, a, b, &result);
     return .{
@@ -111,15 +111,17 @@ fn subU16WithCarryHalf(a: u16, b: u16) u16OpResultWithOverflow {
     };
 }
 
-fn addU16ToSingedU8WithCarryHalf(a: u16, b: u8) u16OpResultWithOverflow {
+fn addU16ToSingedU8WithCarryHalf(a: u16, b: u8) u16OpResultWithCarryHalf {
     const n = @intCast(u16, bitClear(u8, b, 7));
     if (bitCheck(u8, b, 7)) {
-        const i = @intCast(u16, 128 - n);
+        const i = 128 - n;
         const result = a -% i;
         return .{
             .result = result,
-            .carry = (a ^ i ^ result) & 0x100 != 0,
-            .half = (a ^ i ^ result) & 0x10 != 0,
+            //.carry = (a ^ i ^ result) & 0x100 != 0,
+            //.half = (a ^ i ^ result) & 0x10 != 0,
+            .carry = (a & 0xff) -% (i & 0xff) < (a & 0xff),
+            .half = (a & 0xf) -% (i & 0xf) < (a & 0xf),
         };
     } else {
         const result = a +% n;
@@ -619,8 +621,8 @@ pub const CPU = struct {
         self.setHL(a.result);
         self.setCarry(a.carry);
         self.setHalf(a.half);
-        self.setZero(false);
         self.setNegative(false);
+        self.setZero(false);
         self.tick();
     }
 
@@ -757,6 +759,8 @@ pub const CPU = struct {
         self.setHalf(a.half);
         self.setNegative(false);
         self.setZero(false);
+        self.tick();
+        self.tick();
     }
 
     fn inc16(self: *CPU, op: Operand) void {
@@ -1600,3 +1604,5 @@ pub const CPU = struct {
     }
 
 };
+
+
