@@ -118,10 +118,8 @@ fn addU16ToSingedU8WithCarryHalf(a: u16, b: u8) u16OpResultWithCarryHalf {
         const result = a -% i;
         return .{
             .result = result,
-            //.carry = (a ^ i ^ result) & 0x100 != 0,
-            //.half = (a ^ i ^ result) & 0x10 != 0,
-            .carry = (a & 0xff) -% (i & 0xff) < (a & 0xff),
-            .half = (a & 0xf) -% (i & 0xf) < (a & 0xf),
+            .carry = (a ^ i ^ result) & 0x100 == 0,
+            .half = (a ^ i ^ result) & 0x10 == 0,
         };
     } else {
         const result = a +% n;
