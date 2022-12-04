@@ -1,9 +1,10 @@
 const std = @import("std");
 const process = std.process;
 const print = std.debug.print;
+//const time = std.time;
 
 const ROM = @import("rom.zig").ROM;
-const MBC1 = @import("mbc.zig").MBC1;
+const MBC = @import("mbc.zig").MBC;
 const Logger = @import("logger.zig").Logger;
 const CPU = @import("cpu.zig").CPU;
 
@@ -22,12 +23,11 @@ pub fn main() !void {
     const rom = try ROM.readFile(gpa.allocator(), path);
     print("{s} {}\n", .{rom.title, rom.cartrige_type});
 
-    var mbc1 = MBC1.init(gpa.allocator(), &rom);
-    var mbc = &mbc1.mbc;
+    var mbc = MBC.init(gpa.allocator(), &rom);
 
     var logger = try Logger.init();
 
-    var cpu = CPU.init(mbc, &logger); 
+    var cpu = CPU.init(&mbc, &logger); 
 
     var stdin = std.io.getStdIn().reader();
     var isCreateDumpFile = false;
@@ -91,6 +91,7 @@ pub fn main() !void {
            } else {
                 const n = std.fmt.parseInt(usize, line, 10) catch 0;
                 const p = logger.is_print;
+                //var timer = try time.Timer.start();
                 if (n != 0) {
                     var i: usize = 0;
                     while (i < n - 1) : (i += 1) {
@@ -111,6 +112,7 @@ pub fn main() !void {
                     cpu.step();
                     logger.is_print = p;
                 }
+                //print("time: {}\n", .{timer.lap()});
             }
         }
     }

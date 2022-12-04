@@ -111,7 +111,7 @@ fn subU16WithCarryHalf(a: u16, b: u16) u16OpResultWithCarryHalf {
     };
 }
 
-fn addU16ToSingedU8WithCarryHalf(a: u16, b: u8) u16OpResultWithCarryHalf {
+pub fn addU16ToSingedU8WithCarryHalf(a: u16, b: u8) u16OpResultWithCarryHalf {
     const n = @intCast(u16, bitClear(u8, b, 7));
     if (bitCheck(u8, b, 7)) {
         const i = 128 - n;
@@ -258,7 +258,7 @@ pub const CPU = struct {
             _ = std.fmt.bufPrint(
                 &stateBuf, stateFmt, .{
                     self.exe_counter, 
-                    self.mbc.romBank(),
+                    self.mbc.getROMBank(),
                     self.pc -% 1, 
                     rom[0..n],
                     self.sp,
