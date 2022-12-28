@@ -10,11 +10,7 @@ const Registers = @import("utils.zig").Registers;
 pub const MBC = union(enum) {
     mbc1: *MBC1,
 
-    // inline!!
-    // require place to store MBCx struct data
-    // but 'var mbc1' in MBC.init stack frame
-    // because puts variable on caller level stack frame
-    // TODO: into heap and unuse inline
+    // TODO: into heap, unuse inline
     pub inline fn init(allocator: Allocator, rom: *const ROM) MBC {
         switch (rom.cartrige_type.mbc_type) {
             .mbc1 => {

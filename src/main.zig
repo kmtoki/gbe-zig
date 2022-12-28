@@ -10,9 +10,9 @@ const CPU = @import("cpu.zig").CPU;
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    //const allocator = gpa.allocator();
 
     var argIter = try std.process.argsWithAllocator(gpa.allocator());
+    defer argIter.deinit();
     var path: []const u8 = "rom/gb_test_roms/cpu_instrs/cpu_instrs.gb";
     if (argIter.skip()) {
         if (argIter.next()) |arg| {
@@ -20,10 +20,17 @@ pub fn main() !void {
         }
     }
 
-    const rom = try ROM.readFile(gpa.allocator(), path);
+    const file = try std.fs.cwd().openFile(path, .{ .mode = .read_only });
+    defer file.close();
+    const stat = try file.stat();
+    const readerAlloc = gpa.allocator();
+    const buffer = try file.reader().readAllAlloc(readerAlloc, stat.size);
+    defer readerAlloc.free(buffer);
+    const rom = ROM.parse(buffer);
     print("{s} {}\n", .{rom.title, rom.cartrige_type});
 
     var mbc = MBC.init(gpa.allocator(), &rom);
+    defer mbc.deinit();
 
     var logger = try Logger.init();
 

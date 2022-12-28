@@ -56,14 +56,5 @@ pub const ROM = struct {
             .data = data
         };
     }
-
-    pub fn readFile(allocator: std.mem.Allocator, path: []const u8) !ROM {
-        const file = try std.fs.cwd().openFile(path, .{ .mode = .read_only });
-        defer file.close();
-        const stat = try file.stat();
-        const buffer = try file.reader().readAllAlloc(allocator,stat.size);
-
-        return parse(buffer);
-    }
 };
 
