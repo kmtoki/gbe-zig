@@ -36,6 +36,15 @@ pub fn main() !void {
 
     var cpu = CPU.init(&mbc, &logger); 
 
+    var n: u64 = 0;
+    while (n < 26000000) : (n += 1) {
+        cpu.step();
+    }
+    print("Serial:\n{s}\n", .{cpu.serial_buffer});
+    return;
+}
+
+fn debugger(cpu: *CPU, logger: *Logger, rom: *ROM) !void {
     var stdin = std.io.getStdIn().reader();
     var isCreateDumpFile = false;
     while (true) {
